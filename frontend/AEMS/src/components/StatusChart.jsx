@@ -15,11 +15,19 @@ export default function StatusChart({ data }) {
     ],
   };
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+    },
+  };
+
   return (
-    <div className="card">
-      <div className="card-header">Status Distribution</div>
-      <div className="card-body">
-        <Pie data={chartData} />
+    <div className="card h-100">
+      <div className="card-header fw-semibold">Status Distribution</div>
+      <div className="card-body" style={{ height: '350px' }}>
+        <Pie data={chartData} options={chartOptions} />
       </div>
     </div>
   );
