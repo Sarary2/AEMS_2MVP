@@ -3,7 +3,6 @@ const router = express.Router();
 const path = require('path');
 const { parseFDAFile, getAllDevices } = require('../utils/parseFDA');
 
-// Upload and parse MAUDE file
 router.post('/upload', async (req, res) => {
   try {
     const filePath = path.join(__dirname, '..', 'uploads', 'maude.csv');
@@ -15,7 +14,6 @@ router.post('/upload', async (req, res) => {
   }
 });
 
-// Return all processed devices
 router.get('/all', (req, res) => {
   try {
     const devices = getAllDevices();
@@ -26,3 +24,4 @@ router.get('/all', (req, res) => {
 });
 
 module.exports = router;
+

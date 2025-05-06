@@ -18,7 +18,8 @@ function classifySeverity(text) {
 
 function classifyDeviceStatus(events) {
   let severeCount = 0;
-  let hasDeath = false, hasInjury = false;
+  let hasDeath = false;
+  let hasInjury = false;
 
   for (const e of events) {
     const full = `${e.deviceProblem} ${e.patientProblem} ${e.eventText}`.toLowerCase();
@@ -36,28 +37,23 @@ function classifyDeviceStatus(events) {
 async function parseFDAFile(filePath) {
   return new Promise((resolve, reject) => {
     const rawEvents = [];
-    let headersMap = {};
 
     fs.createReadStream(filePath)
       .pipe(csv({
         separator: ';',
-        mapHeaders: ({ header, index }) => {
-          const normalized = header.trim().toLowerCase();
-          if (normalized.includes('brand') && normalized.includes('name')) headersMap.brand = header.trim();
-          else if (normalized.includes('device') && normalized.includes('problem')) headersMap.deviceProblem = header.trim();
-          else if (normalized.includes('patient') && normalized.includes('problem')) headersMap.patientProblem = header.trim();
-          else if (normalized.includes('event') && normalized.includes('text')) headersMap.eventText = header.trim();
-          return header.trim(); // still trim for parser
-        }
+        mapHeaders: ({ header }) => header.trim()
       }))
+      .once('headers', (headers) => {
+        console.log('📋 CSV Headers:', headers);
+      })
       .on('data', (row) => {
         try {
-          const brand = row[headersMap.brand]?.trim();
-          const deviceProblem = row[headersMap.deviceProblem]?.trim() || 'N/A';
-          const patientProblem = row[headersMap.patientProblem]?.trim() || 'N/A';
-          const eventText = row[headersMap.eventText]?.trim() || 'N/A';
+          const brand = row['Brand Name']?.trim();
+          const deviceProblem = row['Device Problem']?.trim() || 'N/A';
+          const patientProblem = row['Patient Problem']?.trim() || 'N/A';
+          const eventText = row['Event Text']?.trim() || 'N/A';
 
-          if (!brand) return;
+          if (!brand) return; // Skip if brand is missing
 
           const severity = classifySeverity(`${deviceProblem} ${patientProblem} ${eventText}`);
           rawEvents.push({ brandName: brand, deviceProblem, patientProblem, eventText, severity });

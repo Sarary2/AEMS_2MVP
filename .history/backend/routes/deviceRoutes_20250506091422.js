@@ -26,3 +26,5 @@ router.get('/all', (req, res) => {
 });
 
 module.exports = router;
+
+

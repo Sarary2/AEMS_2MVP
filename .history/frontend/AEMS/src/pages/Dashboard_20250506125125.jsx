@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/StatCard';
 import DeviceRow from '../components/DeviceRow';
 import StatusChart from '../components/StatusChart';
-import RecallsPanel from '../components/RecallsPanel';
+import EventsChart from '../components/EventsChart';
 
 export default function Dashboard() {
   const [devices, setDevices] = useState([]);
@@ -14,15 +14,23 @@ export default function Dashboard() {
   const [deviceInput, setDeviceInput] = useState('');
   const navigate = useNavigate();
 
-  // Fetch data
   useEffect(() => {
     fetch('http://localhost:5001/api/devices/all')
       .then(res => res.json())
-      .then(setDevices)
+      .then(data => setDevices(data))
       .catch(err => console.error('Failed to fetch devices', err));
   }, []);
 
-  // Tracking
+  const getStatusCounts = () => {
+    const total = devices.length;
+    const safe = devices.filter(d => d.status === 'Safe').length;
+    const warning = devices.filter(d => d.status === 'Warning').length;
+    const critical = devices.filter(d => d.status === 'Critical').length;
+    return { total, safe, warning, critical };
+  };
+
+  const { total, safe, warning, critical } = getStatusCounts();
+
   const handleTrackAdd = () => {
     const input = deviceInput.trim().toLowerCase();
     if (!input || tracked.includes(input)) return;
@@ -32,52 +40,29 @@ export default function Dashboard() {
     setDeviceInput('');
   };
 
-  const handleTrackRemove = (brandName) => {
-    const normalized = tracked.find(t => brandName.toLowerCase().includes(t));
-    if (!normalized) return;
-    const updated = tracked.filter(t => t !== normalized);
+  const handleTrackRemove = (name) => {
+    const updated = tracked.filter(t => t !== name.toLowerCase());
     setTracked(updated);
     localStorage.setItem('trackedDevices', JSON.stringify(updated));
   };
 
-  // Match devices
   const matchedTrackedDevices = devices.filter(d =>
     tracked.some(t => d.brandName.toLowerCase().includes(t))
   );
 
-  const filteredDevices = filter === 'All'
-    ? matchedTrackedDevices
-    : matchedTrackedDevices.filter(d => d.status === filter);
-
-  // Status logic
-  const getStatusCounts = () => {
-    const safe = matchedTrackedDevices.filter(d => d.status === 'Safe').length;
-    const warning = matchedTrackedDevices.filter(d => d.status === 'Warning').length;
-    const critical = matchedTrackedDevices.filter(d => d.status === 'Critical').length;
-    return {
-      total: matchedTrackedDevices.length,
-      safe,
-      warning,
-      critical,
-    };
-  };
-
-  const { total, safe, warning, critical } = getStatusCounts();
+  const filteredDevices =
+    filter === 'All'
+      ? matchedTrackedDevices
+      : matchedTrackedDevices.filter(d => d.status === filter);
 
   const statusIcons = {
     Safe: '✅',
     Warning: '⚠️',
-    Critical: '❌',
+    Critical: '❌'
   };
-
-  const dummyRecalls = [
-    { brandName: 'Infusion Pump A', recallReason: 'Leak detected', recallDate: '2025-05-04' },
-    { brandName: 'Heart Monitor Q', recallReason: 'Display malfunction', recallDate: '2025-04-30' },
-  ];
 
   return (
     <div className="container-fluid">
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
         <h2>📊 Device Risk Overview</h2>
         <div>
@@ -87,7 +72,35 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Add Device */}
+      <div className="row mb-4">
+        <StatCard title="Total Devices" count={total} />
+        <StatCard title="Safe" count={safe} />
+        <StatCard title="Warning" count={warning} />
+        <StatCard title="Critical" count={critical} />
+      </div>
+
+      <div className="row mb-4">
+        <div className="col-md-6">
+          <StatusChart data={{ Safe: safe, Warning: warning, Critical: critical }} />
+        </div>
+        <div className="col-md-6">
+          <EventsChart devices={devices} />
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <strong>Filter by Status:</strong>{' '}
+        {['All', 'Safe', 'Warning', 'Critical'].map((s) => (
+          <button
+            key={s}
+            className={`btn btn-sm mx-1 btn-${s === 'All' ? 'secondary' : s === 'Safe' ? 'success' : s === 'Warning' ? 'warning' : 'danger'}`}
+            onClick={() => setFilter(s)}
+          >
+            {s} {statusIcons[s] || ''}
+          </button>
+        ))}
+      </div>
+
       <div className="mb-3 row">
         <div className="col-md-10">
           <input
@@ -104,23 +117,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="mb-3">
-        <strong>Filter by Status:</strong>{' '}
-        {['All', 'Safe', 'Warning', 'Critical'].map((s) => (
-          <button
-            key={s}
-            className={`btn btn-sm mx-1 btn-${s === 'All' ? 'secondary' : s === 'Safe' ? 'success' : s === 'Warning' ? 'warning' : 'danger'}`}
-            onClick={() => setFilter(s)}
-          >
-            {s} {statusIcons[s] || ''}
-          </button>
-        ))}
-      </div>
-
-      {/* Devices Table */}
       <h4>📋 Tracked Devices ({filteredDevices.length})</h4>
-      <div className="table-responsive mb-4">
+      <div className="table-responsive">
         <table className="table table-striped table-bordered mt-2">
           <thead className="table-light">
             <tr>
@@ -137,24 +135,6 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="row mb-4">
-        <StatCard title="Total Devices" count={total} />
-        <StatCard title="Safe" count={safe} />
-        <StatCard title="Warning" count={warning} />
-        <StatCard title="Critical" count={critical} />
-      </div>
-
-      {/* Charts */}
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <StatusChart data={{ Safe: safe, Warning: warning, Critical: critical }} />
-        </div>
-        <div className="col-md-6">
-          <RecallsPanel recalls={dummyRecalls} />
-        </div>
       </div>
     </div>
   );

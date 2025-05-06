@@ -4,9 +4,6 @@ import Dashboard from './pages/Dashboard';
 import Events from './pages/Events';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Recalls from './pages/Recalls';
-import Settings from './pages/Settings';
-import TrackedDevices from './pages/TrackedDevices';
 
 function LayoutWithSidebar({ children }) {
   return (
@@ -33,9 +30,9 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/events" element={<Events />} />
-        <Route path="/recalls" element={<Recalls />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/tracked" element={<TrackedDevices />} />
+        <Route path="/recalls" element={<div>Recalls Page</div>} />
+        <Route path="/settings" element={<div>Settings Page</div>} />
+        <Route path="/tracked" element={<div>Tracked Devices Page</div>} />
       </Routes>
     </LayoutWithSidebar>
   );

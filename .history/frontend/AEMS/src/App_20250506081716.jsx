@@ -4,15 +4,12 @@ import Dashboard from './pages/Dashboard';
 import Events from './pages/Events';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Recalls from './pages/Recalls';
-import Settings from './pages/Settings';
 import TrackedDevices from './pages/TrackedDevices';
-
 function LayoutWithSidebar({ children }) {
   return (
-    <div className="d-flex min-vh-100">
+    <div className="d-flex">
       <Sidebar />
-      <div className="flex-grow-1 bg-light p-4 overflow-auto">
+      <div className="p-4 flex-grow-1">
         {children}
       </div>
     </div>
@@ -23,21 +20,21 @@ function AppRoutes() {
   const location = useLocation();
   const hideSidebar = ['/login', '/register'].includes(location.pathname);
 
-  return hideSidebar ? (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-    </Routes>
-  ) : (
-    <LayoutWithSidebar>
+  return (
+    hideSidebar ? (
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/recalls" element={<Recalls />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/tracked" element={<TrackedDevices />} />
       </Routes>
-    </LayoutWithSidebar>
+    ) : (
+      <LayoutWithSidebar>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/events" element={<Events />} />
+        </Routes>
+      </LayoutWithSidebar>
+    )
   );
 }
 

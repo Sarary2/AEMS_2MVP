@@ -36,33 +36,25 @@ function classifyDeviceStatus(events) {
 async function parseFDAFile(filePath) {
   return new Promise((resolve, reject) => {
     const rawEvents = [];
-    let headersMap = {};
 
     fs.createReadStream(filePath)
       .pipe(csv({
         separator: ';',
-        mapHeaders: ({ header, index }) => {
-          const normalized = header.trim().toLowerCase();
-          if (normalized.includes('brand') && normalized.includes('name')) headersMap.brand = header.trim();
-          else if (normalized.includes('device') && normalized.includes('problem')) headersMap.deviceProblem = header.trim();
-          else if (normalized.includes('patient') && normalized.includes('problem')) headersMap.patientProblem = header.trim();
-          else if (normalized.includes('event') && normalized.includes('text')) headersMap.eventText = header.trim();
-          return header.trim(); // still trim for parser
-        }
+        mapHeaders: ({ header }) => header.trim()
       }))
       .on('data', (row) => {
         try {
-          const brand = row[headersMap.brand]?.trim();
-          const deviceProblem = row[headersMap.deviceProblem]?.trim() || 'N/A';
-          const patientProblem = row[headersMap.patientProblem]?.trim() || 'N/A';
-          const eventText = row[headersMap.eventText]?.trim() || 'N/A';
+          const brand = row['Brand Name']?.trim();
+          const deviceProblem = row['Device Problem']?.trim();
+          const patientProblem = row['Patient Problem']?.trim();
+          const eventText = row['Event Text']?.trim();
 
-          if (!brand) return;
+          if (!brand || !deviceProblem) return;
 
           const severity = classifySeverity(`${deviceProblem} ${patientProblem} ${eventText}`);
           rawEvents.push({ brandName: brand, deviceProblem, patientProblem, eventText, severity });
         } catch (err) {
-          console.warn('⚠️ Failed to parse row:', row);
+          console.warn("⚠️ Failed to parse row:", row);
         }
       })
       .on('end', () => {

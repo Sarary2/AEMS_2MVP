@@ -6,7 +6,9 @@ const DEVICE_FILE = path.join(__dirname, '..', 'data', 'devices.json');
 
 function ensureDirectoryExists(filePath) {
   const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 }
 
 function classifySeverity(text) {
@@ -17,53 +19,40 @@ function classifySeverity(text) {
 }
 
 function classifyDeviceStatus(events) {
+  let count = events.length;
   let severeCount = 0;
   let hasDeath = false, hasInjury = false;
 
   for (const e of events) {
     const full = `${e.deviceProblem} ${e.patientProblem} ${e.eventText}`.toLowerCase();
     if (full.includes('death') || full.includes('cardiac arrest')) hasDeath = true;
-    if (full.includes('injury') || full.includes('hospitalization') || full.includes('intervention')) hasInjury = true;
+    if (full.includes('injury') || full.includes('intervention') || full.includes('hospitalization')) hasInjury = true;
     if (e.severity === 'Severe') severeCount++;
   }
 
-  const riskScore = (severeCount * 5) + events.length;
+  const riskScore = (severeCount * 5) + count;
+
   if (hasDeath || riskScore >= 40) return 'Critical';
   if (hasInjury || riskScore >= 15) return 'Warning';
   return 'Safe';
 }
 
 async function parseFDAFile(filePath) {
+  const rawEvents = [];
+
   return new Promise((resolve, reject) => {
-    const rawEvents = [];
-    let headersMap = {};
-
     fs.createReadStream(filePath)
-      .pipe(csv({
-        separator: ';',
-        mapHeaders: ({ header, index }) => {
-          const normalized = header.trim().toLowerCase();
-          if (normalized.includes('brand') && normalized.includes('name')) headersMap.brand = header.trim();
-          else if (normalized.includes('device') && normalized.includes('problem')) headersMap.deviceProblem = header.trim();
-          else if (normalized.includes('patient') && normalized.includes('problem')) headersMap.patientProblem = header.trim();
-          else if (normalized.includes('event') && normalized.includes('text')) headersMap.eventText = header.trim();
-          return header.trim(); // still trim for parser
-        }
-      }))
+      .pipe(csv({ separator: ';', mapHeaders: ({ header, index }) => `col${index}` }))
       .on('data', (row) => {
-        try {
-          const brand = row[headersMap.brand]?.trim();
-          const deviceProblem = row[headersMap.deviceProblem]?.trim() || 'N/A';
-          const patientProblem = row[headersMap.patientProblem]?.trim() || 'N/A';
-          const eventText = row[headersMap.eventText]?.trim() || 'N/A';
+        const brandName = row['col8']?.trim();
+        const deviceProblem = row['col9']?.trim();
+        const patientProblem = row['col10']?.trim();
+        const eventText = row['col14']?.trim();
 
-          if (!brand) return;
+        if (!brandName || !deviceProblem) return;
 
-          const severity = classifySeverity(`${deviceProblem} ${patientProblem} ${eventText}`);
-          rawEvents.push({ brandName: brand, deviceProblem, patientProblem, eventText, severity });
-        } catch (err) {
-          console.warn('⚠️ Failed to parse row:', row);
-        }
+        const severity = classifySeverity(`${deviceProblem} ${patientProblem} ${eventText}`);
+        rawEvents.push({ brandName, deviceProblem, patientProblem, eventText, severity });
       })
       .on('end', () => {
         const deviceMap = new Map();
@@ -76,6 +65,7 @@ async function parseFDAFile(filePath) {
               events: []
             });
           }
+
           deviceMap.get(key).events.push({
             deviceProblem: event.deviceProblem,
             patientProblem: event.patientProblem,
