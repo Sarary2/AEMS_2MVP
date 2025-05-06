@@ -6,7 +6,7 @@ import {
   FaCog,
   FaStethoscope,
 } from 'react-icons/fa';
-import logo from '../assets/logo.png'; // Make sure path is correct
+import logo from '../assets/logo.png';
 
 export default function Sidebar() {
   return (
@@ -14,17 +14,18 @@ export default function Sidebar() {
       className="bg-primary text-white d-flex flex-column align-items-start p-3"
       style={{ width: '250px', minHeight: '100vh' }}
     >
-      {/* Logo only */}
+      {/* Logo and Branding */}
       <div className="w-100 text-center mb-4">
         <img
           src={logo}
           alt="AEMS Logo"
           className="img-fluid"
-          style={{ height: '200px', objectFit: 'contain' }}
+          style={{ height: '50px', objectFit: 'contain' }}
         />
+        <h5 className="mt-2 fw-bold">AEMS</h5>
       </div>
 
-      {/* Navigation links */}
+      {/* Navigation */}
       <ul className="nav flex-column w-100">
         <li className="nav-item">
           <NavLink

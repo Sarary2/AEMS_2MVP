@@ -20,7 +20,7 @@ export default function Sidebar() {
           src={logo}
           alt="AEMS Logo"
           className="img-fluid"
-          style={{ height: '200px', objectFit: 'contain' }}
+          style={{ height: '90px', objectFit: 'contain' }}
         />
       </div>
 

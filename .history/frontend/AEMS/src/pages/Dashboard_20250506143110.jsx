@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/StatCard';
 import DeviceRow from '../components/DeviceRow';
 import StatusChart from '../components/StatusChart';
@@ -11,7 +12,9 @@ export default function Dashboard() {
     JSON.parse(localStorage.getItem('trackedDevices') || '[]')
   );
   const [deviceInput, setDeviceInput] = useState('');
+  const navigate = useNavigate();
 
+  // Fetch data
   useEffect(() => {
     fetch('http://localhost:5001/api/devices/all')
       .then(res => res.json())
@@ -19,6 +22,7 @@ export default function Dashboard() {
       .catch(err => console.error('Failed to fetch devices', err));
   }, []);
 
+  // Tracking
   const handleTrackAdd = () => {
     const input = deviceInput.trim().toLowerCase();
     if (!input || tracked.includes(input)) return;
@@ -36,6 +40,7 @@ export default function Dashboard() {
     localStorage.setItem('trackedDevices', JSON.stringify(updated));
   };
 
+  // Match devices
   const matchedTrackedDevices = devices.filter(d =>
     tracked.some(t => d.brandName.toLowerCase().includes(t))
   );
@@ -44,6 +49,7 @@ export default function Dashboard() {
     ? matchedTrackedDevices
     : matchedTrackedDevices.filter(d => d.status === filter);
 
+  // Status logic
   const getStatusCounts = () => {
     const safe = matchedTrackedDevices.filter(d => d.status === 'Safe').length;
     const warning = matchedTrackedDevices.filter(d => d.status === 'Warning').length;
@@ -74,6 +80,11 @@ export default function Dashboard() {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
         <h2>Overview</h2>
+        <div>
+          <button className="btn btn-outline-primary me-2" onClick={() => navigate('/login')}>Login</button>
+          <button className="btn btn-outline-secondary me-2" onClick={() => navigate('/register')}>Register</button>
+          <button className="btn btn-outline-danger" onClick={() => alert('🔒 Logged out')}>Logout</button>
+        </div>
       </div>
 
       {/* Add Device */}
