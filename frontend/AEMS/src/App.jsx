@@ -4,7 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Events from './pages/Events';
 import Login from './pages/Login';
 import Register from './pages/Register';
-
+import TrackedDevices from './pages/TrackedDevices';
 function LayoutWithSidebar({ children }) {
   return (
     <div className="d-flex">
@@ -31,6 +31,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/tracked" element={<TrackedDevices />} />
         </Routes>
       </LayoutWithSidebar>
     )

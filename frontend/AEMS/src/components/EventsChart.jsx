@@ -1,45 +1,24 @@
 import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function EventsChart({ devices }) {
-  const severityCounts = { Severe: 0, Moderate: 0, Minor: 0 };
-
-  devices.forEach(device => {
-    device.events.forEach(event => {
-      if (severityCounts[event.severity] !== undefined) {
-        severityCounts[event.severity]++;
-      }
-    });
-  });
-
   const chartData = {
-    labels: ['Severe', 'Moderate', 'Minor'],
+    labels: devices.map((d) => d.deviceName.split(' ')[0]).slice(0, 10),
     datasets: [
       {
-        label: 'Event Count',
-        data: [
-          severityCounts.Severe,
-          severityCounts.Moderate,
-          severityCounts.Minor
-        ],
-        backgroundColor: ['#dc3545', '#ffc107', '#198754']
-      }
-    ]
+        label: 'Reported Events',
+        data: devices.map((d) => d.events.length).slice(0, 10),
+        backgroundColor: '#0d6efd',
+      },
+    ],
   };
 
   return (
-    <div className="card mb-4">
+    <div className="card">
+      <div className="card-header">Event Count (Top 10 Devices)</div>
       <div className="card-body">
-        <h5 className="card-title">Event Severity Distribution</h5>
         <Bar data={chartData} />
       </div>
     </div>

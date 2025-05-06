@@ -9,6 +9,9 @@ export default function Sidebar() {
         <li className="nav-item"><Link className="nav-link text-white" to="/events">Events</Link></li>
         <li className="nav-item"><Link className="nav-link text-white" to="/recalls">Recalls</Link></li>
         <li className="nav-item"><Link className="nav-link text-white" to="/settings">Settings</Link></li>
+        <li className="nav-item">
+  <a className="nav-link" href="/tracked">My Devices</a>
+</li>
       </ul>
     </div>
   );

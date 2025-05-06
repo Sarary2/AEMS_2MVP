@@ -1,6 +1,4 @@
-import React from 'react';
-
-export default function DeviceRow({ name, model, status, harmStatus }) {
+export default function DeviceRow({ name, model, status }) {
   const colorMap = {
     Safe: 'success',
     Warning: 'warning',
@@ -11,16 +9,7 @@ export default function DeviceRow({ name, model, status, harmStatus }) {
     <tr>
       <td>{name}</td>
       <td>{model}</td>
-      <td>
-        <span className={`badge bg-${colorMap[status]}`}>
-          {status}
-        </span>
-      </td>
-      <td>
-        <span className={`badge bg-${colorMap[harmStatus]}`}>
-          {harmStatus}
-        </span>
-      </td>
+      <td><span className={`badge bg-${colorMap[status]}`}>{status}</span></td>
     </tr>
   );
 }
